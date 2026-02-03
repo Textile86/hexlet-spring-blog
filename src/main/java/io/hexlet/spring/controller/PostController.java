@@ -4,7 +4,6 @@ import java.time.LocalDateTime;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicLong;
 
-import jakarta.annotation.ManagedBean;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -14,7 +13,7 @@ import org.springframework.web.bind.annotation.*;
 import io.hexlet.spring.model.Post;
 
 @RestController
-@RequestMapping("/posts")
+@RequestMapping("/api/posts")
 
 public class PostController {
     private List<Post> posts = new ArrayList<Post>();
