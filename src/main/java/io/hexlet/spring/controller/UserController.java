@@ -1,9 +1,10 @@
 package io.hexlet.spring.controller;
 
 import java.util.*;
-import java.util.concurrent.atomic.AtomicLong;
 
+import io.hexlet.spring.repository.UserRepository;
 import jakarta.validation.Valid;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.FieldError;
@@ -15,53 +16,48 @@ import io.hexlet.spring.model.User;
 @RequestMapping("/api/users")
 
 public class UserController {
-    private List<User> users = new ArrayList<User>();
-
-    private AtomicLong nextId = new AtomicLong(1);
+    @Autowired
+    private UserRepository userRepository;
 
     @GetMapping
-    public ResponseEntity<List<User>> getAllUsers(@RequestParam(required = false) Integer limit) {
-        List<User> result = limit != null && limit > 0 ?
-                users.stream().limit(limit).toList()
-                : users;
+    public ResponseEntity<List<User>> index() {
+        List<User> users = userRepository.findAll();
         return ResponseEntity.ok()
                 .header("X-Total-Count", String.valueOf(users.size()))
-                .body(result);
+                .body(users);
     }
 
     @PostMapping
-    public ResponseEntity<User> create(@Valid @RequestBody User user) {
-        user.setId(nextId.getAndIncrement());
-        users.add(user);
-        return ResponseEntity.status(HttpStatus.CREATED).body(user);
+    @ResponseStatus(HttpStatus.CREATED)
+    public User create(@Valid @RequestBody User user) {
+        return userRepository.save(user);
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<User> show(@PathVariable Long id) {
-        Optional<User> user = users.stream()
-                .filter(u -> u.getId() != null && u.getId().equals(id))
-                .findFirst();
+        Optional<User> user = userRepository.findById(id);
         return ResponseEntity.of(user);
     }
 
     @PutMapping("/{id}")
     public ResponseEntity<User> update(@PathVariable Long id, @Valid @RequestBody User user) {
-        Optional<User> maybeUser = users.stream()
-                .filter(u -> u.getId() != null && u.getId().equals(id))
-                .findFirst();
+        Optional<User> maybeUser = userRepository.findById(id);
         if (maybeUser.isPresent()) {
             User findedUser = maybeUser.get();
-            findedUser.setName(user.getName());
+            findedUser.setFirstName(user.getFirstName());
+            findedUser.setLastName(user.getLastName());
+            findedUser.setBirthday(user.getBirthday());
             findedUser.setEmail(user.getEmail());
+            userRepository.save(findedUser);
             return ResponseEntity.ok(findedUser);
         }
         return ResponseEntity.notFound().build();
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> destroy(@PathVariable Long id) {
-        users.removeIf(u -> u.getId().equals(id));
-        return ResponseEntity.noContent().build();
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void destroy(@PathVariable Long id) {
+        userRepository.deleteById(id);
     }
 
     @ResponseStatus(HttpStatus.BAD_REQUEST)

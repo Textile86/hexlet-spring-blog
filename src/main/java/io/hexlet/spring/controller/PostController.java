@@ -4,7 +4,9 @@ import java.time.LocalDateTime;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicLong;
 
+import io.hexlet.spring.repository.PostRepository;
 import jakarta.validation.Valid;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.FieldError;
@@ -16,55 +18,50 @@ import io.hexlet.spring.model.Post;
 @RequestMapping("/api/posts")
 
 public class PostController {
-    private List<Post> posts = new ArrayList<Post>();
-
-    private AtomicLong nextId = new AtomicLong(1);
+    @Autowired
+    private PostRepository postRepository;
 
     @GetMapping
     public ResponseEntity<List<Post>> getAllPosts(@RequestParam(required = false) Integer limit) {
-        List<Post> result = limit != null && limit > 0 ?
-                posts.stream().limit(limit).toList()
-                : posts;
+        List<Post> posts = postRepository.findAll();
+        if (limit != null && limit > 0) {
+            posts = posts.stream().limit(limit).toList();
+        }
         return ResponseEntity.ok()
                 .header("X-Total-Count", String.valueOf(posts.size()))
-                .body(result);
+                .body(posts);
     }
 
     @PostMapping
-    public ResponseEntity<Post> create(@Valid @RequestBody Post post) {
-        post.setId(nextId.getAndIncrement());
-        post.setCreatedAt(LocalDateTime.now());
-        posts.add(post);
-        return ResponseEntity.status(HttpStatus.CREATED).body(post);
+    @ResponseStatus(HttpStatus.CREATED)
+    public Post create(@Valid @RequestBody Post post) {
+        return postRepository.save(post);
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<Post> show(@PathVariable Long id) {
-        Optional<Post> post = posts.stream()
-                .filter(p -> p.getId() != null && p.getId().equals(id))
-                .findFirst();
+        Optional<Post> post = postRepository.findById(id);
         return ResponseEntity.of(post);
     }
 
     @PutMapping("/{id}")
     public ResponseEntity<Post> update(@PathVariable Long id, @Valid @RequestBody Post post) {
-        Optional<Post> maybePost = posts.stream()
-                .filter(p -> p.getId() != null && p.getId().equals(id))
-                .findFirst();
+        Optional<Post> maybePost = postRepository.findById(id);
         if (maybePost.isPresent()) {
             Post findedPost = maybePost.get();
             findedPost.setTitle(post.getTitle());
-            findedPost.setAuthor(post.getAuthor());
             findedPost.setContent(post.getContent());
+            findedPost.setPublished(post.isPublished());
+            postRepository.save(findedPost);
             return ResponseEntity.ok(findedPost);
         }
         return ResponseEntity.notFound().build();
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> destroy(@PathVariable Long id) {
-        posts.removeIf(p -> p.getId().equals(id));
-        return ResponseEntity.noContent().build();
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void destroy(@PathVariable Long id) {
+        postRepository.deleteById(id);
     }
 
     @ResponseStatus(HttpStatus.BAD_REQUEST)
