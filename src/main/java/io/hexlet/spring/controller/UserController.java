@@ -7,10 +7,9 @@ import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.validation.FieldError;
-import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.*;
 import io.hexlet.spring.model.User;
+import io.hexlet.spring.exception.ResourceNotFoundException;
 
 @RestController
 @RequestMapping("/api/users")
@@ -34,41 +33,28 @@ public class UserController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<User> show(@PathVariable Long id) {
-        Optional<User> user = userRepository.findById(id);
-        return ResponseEntity.of(user);
+    public User show(@PathVariable Long id) {
+        return userRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("User with id " + id + " not found"));
+
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<User> update(@PathVariable Long id, @Valid @RequestBody User user) {
-        Optional<User> maybeUser = userRepository.findById(id);
-        if (maybeUser.isPresent()) {
-            User findedUser = maybeUser.get();
-            findedUser.setFirstName(user.getFirstName());
-            findedUser.setLastName(user.getLastName());
-            findedUser.setBirthday(user.getBirthday());
-            findedUser.setEmail(user.getEmail());
-            userRepository.save(findedUser);
-            return ResponseEntity.ok(findedUser);
-        }
-        return ResponseEntity.notFound().build();
+    public User update(@PathVariable Long id, @Valid @RequestBody User user) {
+        User findedUser = userRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("User with id " + id + " not found"));
+        findedUser.setFirstName(user.getFirstName());
+        findedUser.setLastName(user.getLastName());
+        findedUser.setBirthday(user.getBirthday());
+        findedUser.setEmail(user.getEmail());
+        return userRepository.save(findedUser);
     }
 
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void destroy(@PathVariable Long id) {
-        userRepository.deleteById(id);
-    }
-
-    @ResponseStatus(HttpStatus.BAD_REQUEST)
-    @ExceptionHandler(MethodArgumentNotValidException.class)
-    public Map<String, String> handleValidationExceptions(MethodArgumentNotValidException ex) {
-        Map<String, String> errors = new HashMap<>();
-        ex.getBindingResult().getAllErrors().forEach((error) -> {
-            String fieldName = ((FieldError) error).getField();
-            String errorMessage = error.getDefaultMessage();
-            errors.put(fieldName, errorMessage);
-        });
-        return errors;
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("User with id " + id + " not found"));
+        userRepository.delete(user);
     }
 }

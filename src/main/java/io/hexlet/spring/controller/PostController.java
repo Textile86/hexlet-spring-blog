@@ -4,13 +4,12 @@ import java.time.LocalDateTime;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicLong;
 
+import io.hexlet.spring.exception.ResourceNotFoundException;
 import io.hexlet.spring.repository.PostRepository;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.validation.FieldError;
-import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.*;
 import io.hexlet.spring.model.Post;
 
@@ -22,7 +21,7 @@ public class PostController {
     private PostRepository postRepository;
 
     @GetMapping
-    public ResponseEntity<List<Post>> getAllPosts(@RequestParam(required = false) Integer limit) {
+    public ResponseEntity<List<Post>> index(@RequestParam(required = false) Integer limit) {
         List<Post> posts = postRepository.findAll();
         if (limit != null && limit > 0) {
             posts = posts.stream().limit(limit).toList();
@@ -39,40 +38,28 @@ public class PostController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Post> show(@PathVariable Long id) {
-        Optional<Post> post = postRepository.findById(id);
-        return ResponseEntity.of(post);
+    public Post show(@PathVariable Long id) {
+        return postRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Post with id " + id + " not found"));
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Post> update(@PathVariable Long id, @Valid @RequestBody Post post) {
-        Optional<Post> maybePost = postRepository.findById(id);
-        if (maybePost.isPresent()) {
-            Post findedPost = maybePost.get();
-            findedPost.setTitle(post.getTitle());
-            findedPost.setContent(post.getContent());
-            findedPost.setPublished(post.isPublished());
-            postRepository.save(findedPost);
-            return ResponseEntity.ok(findedPost);
-        }
-        return ResponseEntity.notFound().build();
+    public Post update(@PathVariable Long id, @Valid @RequestBody Post postData) {
+        Post post = postRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Post with id " + id + " not found"));
+
+        post.setTitle(postData.getTitle());
+        post.setContent(postData.getContent());
+        post.setPublished(postData.isPublished());
+
+        return postRepository.save(post);
     }
 
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void destroy(@PathVariable Long id) {
-        postRepository.deleteById(id);
-    }
-
-    @ResponseStatus(HttpStatus.BAD_REQUEST)
-    @ExceptionHandler(MethodArgumentNotValidException.class)
-    public Map<String, String> handleValidationExceptions(MethodArgumentNotValidException ex) {
-        Map<String, String> errors = new HashMap<>();
-        ex.getBindingResult().getAllErrors().forEach((error) -> {
-            String fieldName = ((FieldError) error).getField();
-            String errorMessage = error.getDefaultMessage();
-            errors.put(fieldName, errorMessage);
-        });
-        return errors;
+        Post post = postRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Post with id " + id + " not found"));
+        postRepository.delete(post);
     }
 }
