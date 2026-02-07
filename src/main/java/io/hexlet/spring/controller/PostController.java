@@ -1,13 +1,14 @@
 package io.hexlet.spring.controller;
 
-import java.time.LocalDateTime;
 import java.util.*;
-import java.util.concurrent.atomic.AtomicLong;
-
 import io.hexlet.spring.exception.ResourceNotFoundException;
 import io.hexlet.spring.repository.PostRepository;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -21,14 +22,11 @@ public class PostController {
     private PostRepository postRepository;
 
     @GetMapping
-    public ResponseEntity<List<Post>> index(@RequestParam(required = false) Integer limit) {
-        List<Post> posts = postRepository.findAll();
-        if (limit != null && limit > 0) {
-            posts = posts.stream().limit(limit).toList();
-        }
-        return ResponseEntity.ok()
-                .header("X-Total-Count", String.valueOf(posts.size()))
-                .body(posts);
+    public Page<Post> getPublishedPosts(@RequestParam(defaultValue = "0") int page,
+                                        @RequestParam(defaultValue = "10") int size) {
+        Sort sort = Sort.by(Sort.Order.desc("createdAt"));
+        Pageable pageable = PageRequest.of(page, size, sort);
+        return postRepository.findByPublishedTrue(pageable);
     }
 
     @PostMapping
