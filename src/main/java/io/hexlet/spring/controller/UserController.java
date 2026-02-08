@@ -15,8 +15,12 @@ import io.hexlet.spring.exception.ResourceNotFoundException;
 @RequestMapping("/api/users")
 
 public class UserController {
-    @Autowired
-    private UserRepository userRepository;
+
+    private final UserRepository userRepository;
+
+    public UserController(UserRepository userRepository) {
+        this.userRepository = userRepository;
+    }
 
     @GetMapping
     public ResponseEntity<List<User>> index() {
