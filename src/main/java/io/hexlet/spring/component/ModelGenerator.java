@@ -6,10 +6,13 @@ import io.hexlet.spring.repository.PostRepository;
 import io.hexlet.spring.repository.UserRepository;
 import jakarta.annotation.PostConstruct;
 import net.datafaker.Faker;
+import org.aspectj.weaver.ast.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
 
 @Component
+
 public class ModelGenerator {
 
     private final Faker faker;
