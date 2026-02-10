@@ -3,7 +3,7 @@ plugins {
     id("org.springframework.boot") version "3.2.2"
     id("io.spring.dependency-management") version "1.1.3"
     jacoco
-    id("org.sonarqube") version "7.2.2.6593"
+    id("org.sonarqube") version "7.1.0.6387"
 }
 
 group = "io.hexlet"
