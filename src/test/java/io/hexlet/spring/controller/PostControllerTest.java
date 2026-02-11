@@ -5,8 +5,10 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import net.datafaker.Faker;
 import org.instancio.Instancio;
 import org.instancio.Select;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -26,7 +28,7 @@ import java.util.HashMap;
 
 @SpringBootTest
 @AutoConfigureMockMvc
-
+@ActiveProfiles("test")
 public class PostControllerTest {
 
     @Autowired
@@ -37,6 +39,14 @@ public class PostControllerTest {
 
     @Autowired
     private ObjectMapper om;
+
+    @Autowired
+    private Faker faker;
+
+    @BeforeEach
+    public void setUp() {
+        postRepository.deleteAll();  // Очищаем БД перед каждым тестом
+    }
 
     @Test
     public void testIndex() throws Exception {
@@ -65,6 +75,8 @@ public class PostControllerTest {
         Post post = Instancio.of(Post.class)
                 .ignore(Select.field(Post::getId))
                 .ignore(Select.field(Post::getCreatedAt))
+                .supply(Select.field(Post::getTitle), () -> faker.lorem().sentence(5))
+                .supply(Select.field(Post::getContent), () -> faker.lorem().paragraph(3))
                 .create();
         postRepository.save(post);
 
@@ -100,7 +112,7 @@ public class PostControllerTest {
         mockMvc.perform(request)
                 .andExpect(status().isCreated());
 
-        Post post = postRepository.findAll().get(postRepository.findAll().size() - 1);
+        Post post = postRepository.findAll().get(0);
         assertThat(post.getTitle()).isEqualTo("Test Post");
         assertThat(post.getContent()).isEqualTo("This is a test post content");
         assertThat(post.isPublished()).isTrue();
@@ -125,6 +137,8 @@ public class PostControllerTest {
         Post post = Instancio.of(Post.class)
                 .ignore(Select.field(Post::getId))
                 .ignore(Select.field(Post::getCreatedAt))
+                .supply(Select.field(Post::getTitle), () -> faker.lorem().sentence(5))
+                .supply(Select.field(Post::getContent), () -> faker.lorem().paragraph(3))
                 .create();
         postRepository.save(post);
 
@@ -165,6 +179,8 @@ public class PostControllerTest {
         var post = Instancio.of(Post.class)
                 .ignore(Select.field(Post::getId))
                 .ignore(Select.field(Post::getCreatedAt))
+                .supply(Select.field(Post::getTitle), () -> faker.lorem().sentence(5))
+                .supply(Select.field(Post::getContent), () -> faker.lorem().paragraph(3))
                 .create();
         postRepository.save(post);
 
