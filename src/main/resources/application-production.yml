@@ -1,6 +1,6 @@
 spring:
   datasource:
-    url: jdbc:postgresql://${JDBC_DATABASE_HOST}:${JDBC_DATABASE_PORT}/${JDBC_DATABASE_NAME}?sslmode=require
+    url: ${JDBC_DATABASE_URL}
     username: ${DATABASE_USERNAME:postgres}
     password: ${DATABASE_PASSWORD:password}
     driver-class-name: org.postgresql.Driver
@@ -8,6 +8,7 @@ spring:
   jpa:
     hibernate:
       ddl-auto: update
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
     show-sql: false
 
   h2:
