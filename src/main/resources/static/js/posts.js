@@ -233,14 +233,22 @@ async function loadTagsForForm() {
 
 // Хелперы
 function formatDate(dateString) {
-    const date = new Date(dateString);
-    return date.toLocaleDateString('ru-RU', {
-        year: 'numeric',
-        month: 'long',
-        day: 'numeric',
-        hour: '2-digit',
-        minute: '2-digit'
-    });
+    if (!dateString) return 'Неизвестно';
+
+    try {
+        const date = new Date(dateString);
+        if (isNaN(date.getTime())) return 'Неизвестно';
+
+        return date.toLocaleDateString('ru-RU', {
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit'
+        });
+    } catch (e) {
+        return 'Неизвестно';
+    }
 }
 
 function escapeHtml(text) {
