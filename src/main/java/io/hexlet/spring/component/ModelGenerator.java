@@ -12,7 +12,7 @@ import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
 
 @Component
-@Profile({"!test", "!production"})
+@Profile("!production && !test && !development")
 public class ModelGenerator {
 
     private final Faker faker;

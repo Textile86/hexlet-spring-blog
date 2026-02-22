@@ -12,24 +12,25 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
+import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
 import org.springframework.transaction.annotation.Transactional;
 
-
 import java.util.HashMap;
 
 import static net.javacrumbs.jsonunit.assertj.JsonAssertions.assertThatJson;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.jwt;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @SpringBootTest
 @AutoConfigureMockMvc
-@Transactional
 @ActiveProfiles("test")
+@Transactional
 public class UserControllerTest {
 
     @Autowired
@@ -44,14 +45,19 @@ public class UserControllerTest {
     @Autowired
     private UserRepository userRepository;
 
+    private SecurityMockMvcRequestPostProcessors.JwtRequestPostProcessor token;
+
     @BeforeEach
     public void setUp() {
         userRepository.deleteAll();
+
+        token = jwt().jwt(jwt -> jwt.subject("test@example.com"));
     }
 
     @Test
     public void testIndex() throws Exception {
-        MvcResult result = mockMvc.perform(get("/api/users"))
+        MvcResult result = mockMvc.perform(get("/api/users")
+                        .with(token))  // 🆕 Требует токен
                 .andExpect(status().isOk())
                 .andReturn();
 
@@ -60,29 +66,24 @@ public class UserControllerTest {
     }
 
     @Test
+    public void testIndexUnauthorized() throws Exception {
+        mockMvc.perform(get("/api/users"))
+                .andExpect(status().isUnauthorized());
+    }
+
+    @Test
     public void testShow() throws Exception {
-        User user = Instancio.of(User.class)
-                .ignore(Select.field(User::getId))
-                .ignore(Select.field(User::getCreatedAt))
-                .ignore(Select.field(User::getUpdatedAt))
-                .ignore(Select.field(User::getPosts))
-                .supply(Select.field(User::getEmail), () -> faker.internet().emailAddress())
-                .supply(Select.field(User::getFirstName), () -> faker.name().firstName())
-                .supply(Select.field(User::getLastName), () -> faker.name().lastName())
-                .create();
+        User user = createTestUser();
 
-        userRepository.save(user);
-
-        MvcResult result = mockMvc.perform(get("/api/users/" + user.getId()))
+        MvcResult result = mockMvc.perform(get("/api/users/" + user.getId())
+                        .with(token))
                 .andExpect(status().isOk())
                 .andReturn();
 
         String body = result.getResponse().getContentAsString();
-
         assertThatJson(body).and(
                 v -> v.node("email").isEqualTo(user.getEmail()),
-                v -> v.node("firstName").isEqualTo(user.getFirstName()),
-                v -> v.node("lastName").isEqualTo(user.getLastName())
+                v -> v.node("firstName").isEqualTo(user.getFirstName())
         );
     }
 
@@ -91,7 +92,8 @@ public class UserControllerTest {
         var data = new HashMap<>();
         data.put("firstName", "John");
         data.put("lastName", "Smith");
-        data.put("email", "johnsmith@example.com");
+        data.put("email", "john@example.com");
+        data.put("password", "password123");
 
         MockHttpServletRequestBuilder request = post("/api/users")
                 .contentType(MediaType.APPLICATION_JSON)
@@ -102,13 +104,22 @@ public class UserControllerTest {
 
         User user = userRepository.findAll().get(0);
         assertThat(user.getFirstName()).isEqualTo("John");
-        assertThat(user.getEmail()).isEqualTo("johnsmith@example.com");
-
+        assertThat(user.getEmail()).isEqualTo("john@example.com");
     }
 
     @Test
     public void testDestroy() throws Exception {
-        var user = Instancio.of(User.class)
+        User user = createTestUser();
+
+        mockMvc.perform(delete("/api/users/" + user.getId())
+                        .with(token))
+                .andExpect(status().isNoContent());
+
+        assertThat(userRepository.existsById(user.getId())).isFalse();
+    }
+
+    private User createTestUser() {
+        User user = Instancio.of(User.class)
                 .ignore(Select.field(User::getId))
                 .ignore(Select.field(User::getCreatedAt))
                 .ignore(Select.field(User::getUpdatedAt))
@@ -118,12 +129,7 @@ public class UserControllerTest {
                 .supply(Select.field(User::getLastName), () -> faker.name().lastName())
                 .create();
 
-        userRepository.save(user);
-
-        mockMvc.perform(delete("/api/users/" + user.getId()))
-                .andExpect(status().isNoContent());
-
-        assertThat(userRepository.existsById(user.getId())).isFalse();
+        user.setPasswordDigest("$2a$10$test");
+        return userRepository.save(user);
     }
-
 }

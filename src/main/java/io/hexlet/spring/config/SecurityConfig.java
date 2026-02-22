@@ -37,17 +37,23 @@ public class SecurityConfig {
         return http
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
+
+                        .requestMatchers("/", "/index.html", "/login.html", "/register.html",
+                                "/post.html", "/create-post.html", "/tags.html").permitAll()
+                        .requestMatchers("/css/**", "/js/**", "/img/**", "/favicon.ico").permitAll()
+
+                        .requestMatchers("/h2-console", "/h2-console/**").permitAll()
+
                         .requestMatchers("/api/login").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/users").permitAll()
-                        .requestMatchers(HttpMethod.GET, "/api/posts").permitAll()
-                        .requestMatchers(HttpMethod.GET, "/api/posts/*").permitAll()
-                        .requestMatchers(HttpMethod.GET, "/api/tags").permitAll()
-                        .requestMatchers(HttpMethod.GET, "/api/tags/*").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/posts", "/api/posts/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/tags", "/api/tags/**").permitAll()
 
                         .anyRequest().authenticated())
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .oauth2ResourceServer(rs -> rs.jwt(jwt -> jwt.decoder(jwtDecoder)))
                 .httpBasic(Customizer.withDefaults())
+                .headers(headers -> headers.frameOptions(frame -> frame.sameOrigin()))
                 .build();
     }
 

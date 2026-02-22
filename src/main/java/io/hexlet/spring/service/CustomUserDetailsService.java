@@ -22,26 +22,27 @@ public class CustomUserDetailsService implements UserDetailsManager {
 
     @Override
     public void createUser(UserDetails user) {
-        throw new UnsupportedOperationException();
+
     }
 
     @Override
     public void updateUser(UserDetails user) {
-        throw new UnsupportedOperationException();
+
     }
 
     @Override
     public void deleteUser(String username) {
-        throw new UnsupportedOperationException();
+
     }
 
     @Override
     public void changePassword(String oldPassword, String newPassword) {
-        throw new UnsupportedOperationException();
+
     }
 
     @Override
     public boolean userExists(String username) {
-        throw new UnsupportedOperationException();
+
+        return userRepository.findByEmail(username).isPresent();
     }
 }

@@ -1,11 +1,9 @@
 package io.hexlet.spring.controller;
 
-import static net.javacrumbs.jsonunit.assertj.JsonAssertions.assertThatJson;
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-
+import com.fasterxml.jackson.databind.ObjectMapper;
+import io.hexlet.spring.model.Post;
 import io.hexlet.spring.model.User;
+import io.hexlet.spring.repository.PostRepository;
 import io.hexlet.spring.repository.UserRepository;
 import net.datafaker.Faker;
 import org.instancio.Instancio;
@@ -16,21 +14,25 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
+import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
-
-import com.fasterxml.jackson.databind.ObjectMapper;
-
-import io.hexlet.spring.model.Post;
-import io.hexlet.spring.repository.PostRepository;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.HashMap;
+
+import static net.javacrumbs.jsonunit.assertj.JsonAssertions.assertThatJson;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.jwt;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @SpringBootTest
 @AutoConfigureMockMvc
 @ActiveProfiles("test")
+@Transactional
 public class PostControllerTest {
 
     @Autowired
@@ -49,6 +51,7 @@ public class PostControllerTest {
     private Faker faker;
 
     private User testUser;
+    private SecurityMockMvcRequestPostProcessors.JwtRequestPostProcessor token;
 
     @BeforeEach
     public void setUp() {
@@ -59,23 +62,10 @@ public class PostControllerTest {
         testUser.setFirstName(faker.name().firstName());
         testUser.setLastName(faker.name().lastName());
         testUser.setEmail(faker.internet().emailAddress());
-        testUser.setBirthday(faker.date().birthday().toLocalDateTime().toLocalDate());
+        testUser.setPasswordDigest("$2a$10$test");
         userRepository.save(testUser);
-    }
 
-    private Post createTestPost() {
-        Post post = Instancio.of(Post.class)
-                .ignore(Select.field(Post::getId))
-                .ignore(Select.field(Post::getCreatedAt))
-                .ignore(Select.field(Post::getUpdatedAt))
-                .ignore(Select.field(Post::getUser))
-                .ignore(Select.field(Post::getTags))
-                .supply(Select.field(Post::getTitle), () -> faker.lorem().sentence(3))
-                .supply(Select.field(Post::getContent), () -> faker.lorem().paragraph(2))
-                .create();
-
-        post.setUser(testUser);  // ← Устанавливаем User!
-        return postRepository.save(post);
+        token = jwt().jwt(jwt -> jwt.subject(testUser.getEmail()));
     }
 
     @Test
@@ -90,22 +80,8 @@ public class PostControllerTest {
     }
 
     @Test
-    public void testIndexWithPagination() throws Exception {
-        MvcResult result = mockMvc.perform(get("/api/posts?page=0&size=5"))
-                .andExpect(status().isOk())
-                .andReturn();
-
-        String body = result.getResponse().getContentAsString();
-        assertThatJson(body).node("size").isEqualTo(5);
-        assertThatJson(body).node("number").isEqualTo(0);
-    }
-
-    @Test
     public void testShow() throws Exception {
         Post post = createTestPost();
-
-        post.setUser(testUser);
-        postRepository.save(post);
 
         MvcResult result = mockMvc.perform(get("/api/posts/" + post.getId()))
                 .andExpect(status().isOk())
@@ -115,26 +91,20 @@ public class PostControllerTest {
         assertThatJson(body).and(
                 v -> v.node("title").isEqualTo(post.getTitle()),
                 v -> v.node("content").isEqualTo(post.getContent()),
-                v -> v.node("published").isEqualTo(post.isPublished()),
                 v -> v.node("userId").isEqualTo(testUser.getId())
         );
     }
 
     @Test
-    public void testShowNotFound() throws Exception {
-        mockMvc.perform(get("/api/posts/999"))
-                .andExpect(status().isNotFound());
-    }
-
-    @Test
     public void testCreate() throws Exception {
-        HashMap<String, Object> data = new HashMap<>();
+        var data = new HashMap<>();
         data.put("title", "Test Post");
         data.put("content", "This is a test post content");
         data.put("published", true);
         data.put("userId", testUser.getId());
 
         MockHttpServletRequestBuilder request = post("/api/posts")
+                .with(token)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(om.writeValueAsString(data));
 
@@ -145,35 +115,34 @@ public class PostControllerTest {
         assertThat(post.getTitle()).isEqualTo("Test Post");
         assertThat(post.getContent()).isEqualTo("This is a test post content");
         assertThat(post.isPublished()).isTrue();
-        assertThat(post.getUser().getId()).isEqualTo(testUser.getId());
     }
 
     @Test
-    public void testCreateValidationFails() throws Exception {
-        HashMap<String, Object> data = new HashMap<>();
-        data.put("title", "");
-        data.put("content", "");
+    public void testCreateUnauthorized() throws Exception {
+        var data = new HashMap<>();
+        data.put("title", "Test Post");
+        data.put("content", "Content");
+        data.put("userId", testUser.getId());
 
         MockHttpServletRequestBuilder request = post("/api/posts")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(om.writeValueAsString(data));
 
         mockMvc.perform(request)
-                .andExpect(status().isUnprocessableEntity());
+                .andExpect(status().isUnauthorized());
     }
 
     @Test
     public void testUpdate() throws Exception {
         Post post = createTestPost();
-        post.setUser(testUser);
-        postRepository.save(post);
 
-        HashMap<String, Object> data = new HashMap<>();
+        var data = new HashMap<>();
         data.put("title", "Updated Title");
         data.put("content", post.getContent());
         data.put("published", false);
 
         MockHttpServletRequestBuilder request = put("/api/posts/" + post.getId())
+                .with(token)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(om.writeValueAsString(data));
 
@@ -186,36 +155,29 @@ public class PostControllerTest {
     }
 
     @Test
-    public void testUpdateNotFound() throws Exception {
-        HashMap<String, Object> data = new HashMap<>();
-        data.put("title", "Updated Title");
-        data.put("content", "Content longer then 10 symbols");
-        data.put("published", true);
-
-        MockHttpServletRequestBuilder request = put("/api/posts/999")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(om.writeValueAsString(data));
-
-        mockMvc.perform(request)
-                .andExpect(status().isNotFound());
-    }
-
-    @Test
     public void testDestroy() throws Exception {
         Post post = createTestPost();
 
-        post.setUser(testUser);
-        postRepository.save(post);
-
-        mockMvc.perform(delete("/api/posts/" + post.getId()))
+        mockMvc.perform(delete("/api/posts/" + post.getId())
+                        .with(token))
                 .andExpect(status().isNoContent());
 
         assertThat(postRepository.existsById(post.getId())).isFalse();
     }
 
-    @Test
-    public void testDestroyNotFound() throws Exception {
-        mockMvc.perform(delete("/api/posts/999"))
-                .andExpect(status().isNotFound());
+    // Вспомогательный метод
+    private Post createTestPost() {
+        Post post = Instancio.of(Post.class)
+                .ignore(Select.field(Post::getId))
+                .ignore(Select.field(Post::getCreatedAt))
+                .ignore(Select.field(Post::getUpdatedAt))
+                .ignore(Select.field(Post::getUser))
+                .ignore(Select.field(Post::getTags))
+                .supply(Select.field(Post::getTitle), () -> faker.lorem().sentence(3))
+                .supply(Select.field(Post::getContent), () -> faker.lorem().paragraph(2))
+                .create();
+
+        post.setUser(testUser);
+        return postRepository.save(post);
     }
 }

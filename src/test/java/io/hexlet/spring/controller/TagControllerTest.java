@@ -12,24 +12,25 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
+import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
 import org.springframework.transaction.annotation.Transactional;
 
-
 import java.util.HashMap;
 
 import static net.javacrumbs.jsonunit.assertj.JsonAssertions.assertThatJson;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.jwt;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @SpringBootTest
 @AutoConfigureMockMvc
-@Transactional
 @ActiveProfiles("test")
+@Transactional
 public class TagControllerTest {
 
     @Autowired
@@ -44,9 +45,12 @@ public class TagControllerTest {
     @Autowired
     private TagRepository tagRepository;
 
+    private SecurityMockMvcRequestPostProcessors.JwtRequestPostProcessor token;
+
     @BeforeEach
     public void setUp() {
         tagRepository.deleteAll();
+        token = jwt().jwt(jwt -> jwt.subject("test@example.com"));
     }
 
     @Test
@@ -61,19 +65,13 @@ public class TagControllerTest {
 
     @Test
     public void testShow() throws Exception {
-        Tag tag = Instancio.of(Tag.class)
-                .ignore(Select.field(Tag::getId))
-                .supply(Select.field(Tag::getName), () -> faker.lorem().word())
-                .create();
-
-        tagRepository.save(tag);
+        Tag tag = createTestTag();
 
         MvcResult result = mockMvc.perform(get("/api/tags/" + tag.getId()))
                 .andExpect(status().isOk())
                 .andReturn();
 
         String body = result.getResponse().getContentAsString();
-
         assertThatJson(body).and(
                 v -> v.node("name").isEqualTo(tag.getName())
         );
@@ -84,8 +82,8 @@ public class TagControllerTest {
         var data = new HashMap<>();
         data.put("name", "Programming");
 
-
         MockHttpServletRequestBuilder request = post("/api/tags")
+                .with(token)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(om.writeValueAsString(data));
 
@@ -98,17 +96,22 @@ public class TagControllerTest {
 
     @Test
     public void testDestroy() throws Exception {
-        var tag = Instancio.of(Tag.class)
-                .ignore(Select.field(Tag::getId))
-                .supply(Select.field(Tag::getName), () -> faker.lorem().word())
-                .create();
+        Tag tag = createTestTag();
 
-        tagRepository.save(tag);
-
-        mockMvc.perform(delete("/api/tags/" + tag.getId()))
+        mockMvc.perform(delete("/api/tags/" + tag.getId())
+                        .with(token))
                 .andExpect(status().isNoContent());
 
         assertThat(tagRepository.existsById(tag.getId())).isFalse();
     }
 
+    private Tag createTestTag() {
+        Tag tag = Instancio.of(Tag.class)
+                .ignore(Select.field(Tag::getId))
+                .ignore(Select.field(Tag::getPosts))
+                .supply(Select.field(Tag::getName), () -> faker.lorem().word())
+                .create();
+
+        return tagRepository.save(tag);
+    }
 }

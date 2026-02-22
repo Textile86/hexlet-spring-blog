@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Spring Blog - Блог о Spring Boot</title>
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+<header>
+    <div class="container">
+        <h1>Spring Blog</h1>
+        <nav>
+            <a href="/index.html">Посты</a>
+            <a href="/tags.html">Теги</a>
+            <span id="user-email" style="color: #0066cc; font-weight: 500;"></span>
+            <a href="#" onclick="logout()">Выход</a>
+        </nav>
+    </div>
+</header>
+
+<div class="container">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px;">
+        <h2>Все статьи</h2>
+        <a href="/create-post.html" class="btn">Создать пост</a>
+    </div>
+
+    <div id="filters" style="margin-bottom: 20px;">
+        <select id="tag-filter" style="width: 200px;">
+            <option value="">Все теги</option>
+        </select>
+    </div>
+
+    <div id="posts-container" class="loading">Загрузка...</div>
+</div>
+
+<script src="/js/auth.js"></script>
+<script src="/js/posts.js"></script>
+<script>
+    document.getElementById('user-email').textContent = localStorage.getItem('email') || '';
+    loadPosts();
+    loadTagsForFilter();
+</script>
+</body>
+</html>

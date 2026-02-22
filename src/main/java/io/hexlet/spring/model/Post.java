@@ -28,6 +28,8 @@ public class Post implements BaseEntity {
     private Long id;
 
     private String title;
+
+    @Column(length = 5000)
     private String content;
     private boolean published;
 
