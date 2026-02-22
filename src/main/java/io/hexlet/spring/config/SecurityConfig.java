@@ -49,7 +49,7 @@ public class SecurityConfig {
 
                         .requestMatchers("/h2-console", "/h2-console/**").permitAll()
 
-                        .requestMatchers("/api/login").permitAll()
+                        .requestMatchers("/api/login", "/api/login/**").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/users").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/posts", "/api/posts/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/tags", "/api/tags/**").permitAll()
