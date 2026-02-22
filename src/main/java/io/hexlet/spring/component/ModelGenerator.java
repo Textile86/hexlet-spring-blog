@@ -12,7 +12,7 @@ import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
 
 @Component
-
+@Profile({"!test", "!production"})
 public class ModelGenerator {
 
     private final Faker faker;
@@ -39,9 +39,10 @@ public class ModelGenerator {
 
             for (int j = 0; j < 2; j++) {
                 Post post = new Post();
-                post.setTitle(faker.book().title());
-                post.setContent(faker.lorem().paragraph());
+                post.setTitle(faker.lorem().sentence(5));
+                post.setContent(faker.lorem().paragraph(3));
                 post.setPublished(faker.bool().bool());
+                post.setUser(user);
                 postRepository.save(post);
             }
         }

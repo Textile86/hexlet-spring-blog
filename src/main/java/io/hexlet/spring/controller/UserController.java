@@ -2,63 +2,57 @@ package io.hexlet.spring.controller;
 
 import java.util.*;
 
-import io.hexlet.spring.repository.UserRepository;
+import io.hexlet.spring.dto.UserPatchDTO;
+import io.hexlet.spring.dto.UserCreateDTO;
+import io.hexlet.spring.dto.UserDTO;
+import io.hexlet.spring.dto.UserUpdateDTO;
+import io.hexlet.spring.service.UserService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import io.hexlet.spring.model.User;
-import io.hexlet.spring.exception.ResourceNotFoundException;
 
 @RestController
 @RequestMapping("/api/users")
-
 public class UserController {
 
-    private final UserRepository userRepository;
-
-    public UserController(UserRepository userRepository) {
-        this.userRepository = userRepository;
-    }
+    @Autowired
+    private UserService userService;
 
     @GetMapping
-    public ResponseEntity<List<User>> index() {
-        List<User> users = userRepository.findAll();
+    public ResponseEntity<List<UserDTO>> index() {
+        List<UserDTO> userDTOs = userService.index();
+
         return ResponseEntity.ok()
-                .header("X-Total-Count", String.valueOf(users.size()))
-                .body(users);
+                .header("X-Total-Count", String.valueOf(userDTOs.size()))
+                .body(userDTOs);
     }
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public User create(@Valid @RequestBody User user) {
-        return userRepository.save(user);
+    public UserDTO create(@Valid @RequestBody UserCreateDTO dto) {
+        return userService.create(dto);
     }
 
     @GetMapping("/{id}")
-    public User show(@PathVariable Long id) {
-        return userRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("User with id " + id + " not found"));
-
+    public UserDTO show(@PathVariable Long id) {
+        return userService.show(id);
     }
 
     @PutMapping("/{id}")
-    public User update(@PathVariable Long id, @Valid @RequestBody User user) {
-        User findedUser = userRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("User with id " + id + " not found"));
-        findedUser.setFirstName(user.getFirstName());
-        findedUser.setLastName(user.getLastName());
-        findedUser.setBirthday(user.getBirthday());
-        findedUser.setEmail(user.getEmail());
-        return userRepository.save(findedUser);
+    public UserDTO update(@PathVariable Long id, @Valid @RequestBody UserUpdateDTO dto) {
+        return userService.update(id, dto);
+    }
+
+    @PatchMapping("/{id}")
+    public UserDTO patch(@PathVariable Long id, @Valid @RequestBody UserPatchDTO dto) {
+        return userService.patch(id, dto);
     }
 
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void destroy(@PathVariable Long id) {
-        User user = userRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("User with id " + id + " not found"));
-        userRepository.delete(user);
+        userService.destroy(id);
     }
 }

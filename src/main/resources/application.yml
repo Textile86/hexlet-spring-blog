@@ -1,31 +1,8 @@
-spring:
-  datasource:
-    url: jdbc:h2:mem:testdb
-    driver-class-name: org.h2.Driver
-    username: sa
-    password: 
-  
-  jpa:
-    show-sql: true
-    hibernate:
-      ddl-auto: update
-  
-  h2:
-    console:
-      enabled: true
-  
-  output:
-    ansi:
-      enabled: always
-
-logging:
-  pattern:
-    dateformat: "yyyy-MM-dd HH:mm:ss"
-
-server:
-  port: 8080
-  
 app:
-  welcome-message: "Welcome to Spring blog!"
+  welcome-message: "Welcome to Spring Blog!"
   admin-email: "admin@example.com"
   page-size: 10
+
+rsa:
+  private-key: classpath:certs/private.pem
+  public-key: classpath:certs/public.pem

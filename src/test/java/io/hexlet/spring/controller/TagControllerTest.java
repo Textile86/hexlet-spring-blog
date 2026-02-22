@@ -1,8 +1,8 @@
 package io.hexlet.spring.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import io.hexlet.spring.model.User;
-import io.hexlet.spring.repository.UserRepository;
+import io.hexlet.spring.model.Tag;
+import io.hexlet.spring.repository.TagRepository;
 import net.datafaker.Faker;
 import org.instancio.Instancio;
 import org.instancio.Select;
@@ -30,7 +30,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @AutoConfigureMockMvc
 @Transactional
 @ActiveProfiles("test")
-public class UserControllerTest {
+public class TagControllerTest {
 
     @Autowired
     private MockMvc mockMvc;
@@ -42,16 +42,16 @@ public class UserControllerTest {
     private ObjectMapper om;
 
     @Autowired
-    private UserRepository userRepository;
+    private TagRepository tagRepository;
 
     @BeforeEach
     public void setUp() {
-        userRepository.deleteAll();
+        tagRepository.deleteAll();
     }
 
     @Test
     public void testIndex() throws Exception {
-        MvcResult result = mockMvc.perform(get("/api/users"))
+        MvcResult result = mockMvc.perform(get("/api/tags"))
                 .andExpect(status().isOk())
                 .andReturn();
 
@@ -61,69 +61,54 @@ public class UserControllerTest {
 
     @Test
     public void testShow() throws Exception {
-        User user = Instancio.of(User.class)
-                .ignore(Select.field(User::getId))
-                .ignore(Select.field(User::getCreatedAt))
-                .ignore(Select.field(User::getUpdatedAt))
-                .ignore(Select.field(User::getPosts))
-                .supply(Select.field(User::getEmail), () -> faker.internet().emailAddress())
-                .supply(Select.field(User::getFirstName), () -> faker.name().firstName())
-                .supply(Select.field(User::getLastName), () -> faker.name().lastName())
+        Tag tag = Instancio.of(Tag.class)
+                .ignore(Select.field(Tag::getId))
+                .supply(Select.field(Tag::getName), () -> faker.lorem().word())
                 .create();
 
-        userRepository.save(user);
+        tagRepository.save(tag);
 
-        MvcResult result = mockMvc.perform(get("/api/users/" + user.getId()))
+        MvcResult result = mockMvc.perform(get("/api/tags/" + tag.getId()))
                 .andExpect(status().isOk())
                 .andReturn();
 
         String body = result.getResponse().getContentAsString();
 
         assertThatJson(body).and(
-                v -> v.node("email").isEqualTo(user.getEmail()),
-                v -> v.node("firstName").isEqualTo(user.getFirstName()),
-                v -> v.node("lastName").isEqualTo(user.getLastName())
+                v -> v.node("name").isEqualTo(tag.getName())
         );
     }
 
     @Test
     public void testCreate() throws Exception {
         var data = new HashMap<>();
-        data.put("firstName", "John");
-        data.put("lastName", "Smith");
-        data.put("email", "johnsmith@example.com");
+        data.put("name", "Programming");
 
-        MockHttpServletRequestBuilder request = post("/api/users")
+
+        MockHttpServletRequestBuilder request = post("/api/tags")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(om.writeValueAsString(data));
 
         mockMvc.perform(request)
                 .andExpect(status().isCreated());
 
-        User user = userRepository.findAll().get(0);
-        assertThat(user.getFirstName()).isEqualTo("John");
-        assertThat(user.getEmail()).isEqualTo("johnsmith@example.com");
-
+        Tag tag = tagRepository.findAll().get(0);
+        assertThat(tag.getName()).isEqualTo("Programming");
     }
 
     @Test
     public void testDestroy() throws Exception {
-        var user = Instancio.of(User.class)
-                .ignore(Select.field(User::getId))
-                .ignore(Select.field(User::getCreatedAt))
-                .ignore(Select.field(User::getUpdatedAt))
-                .ignore(Select.field(User::getPosts))
-                .supply(Select.field(User::getEmail), () -> faker.internet().emailAddress())
-                .supply(Select.field(User::getFirstName), () -> faker.name().firstName())
-                .supply(Select.field(User::getLastName), () -> faker.name().lastName())
+        var tag = Instancio.of(Tag.class)
+                .ignore(Select.field(Tag::getId))
+                .supply(Select.field(Tag::getName), () -> faker.lorem().word())
                 .create();
 
-        userRepository.save(user);
+        tagRepository.save(tag);
 
-        mockMvc.perform(delete("/api/users/" + user.getId()))
+        mockMvc.perform(delete("/api/tags/" + tag.getId()))
                 .andExpect(status().isNoContent());
 
-        assertThat(userRepository.existsById(user.getId())).isFalse();
+        assertThat(tagRepository.existsById(tag.getId())).isFalse();
     }
 
 }

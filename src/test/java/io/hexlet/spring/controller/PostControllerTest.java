@@ -5,6 +5,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import io.hexlet.spring.model.User;
+import io.hexlet.spring.repository.UserRepository;
 import net.datafaker.Faker;
 import org.instancio.Instancio;
 import org.instancio.Select;
@@ -38,14 +40,42 @@ public class PostControllerTest {
     private PostRepository postRepository;
 
     @Autowired
+    private UserRepository userRepository;
+
+    @Autowired
     private ObjectMapper om;
 
     @Autowired
     private Faker faker;
 
+    private User testUser;
+
     @BeforeEach
     public void setUp() {
-        postRepository.deleteAll();  // Очищаем БД перед каждым тестом
+        postRepository.deleteAll();
+        userRepository.deleteAll();
+
+        testUser = new User();
+        testUser.setFirstName(faker.name().firstName());
+        testUser.setLastName(faker.name().lastName());
+        testUser.setEmail(faker.internet().emailAddress());
+        testUser.setBirthday(faker.date().birthday().toLocalDateTime().toLocalDate());
+        userRepository.save(testUser);
+    }
+
+    private Post createTestPost() {
+        Post post = Instancio.of(Post.class)
+                .ignore(Select.field(Post::getId))
+                .ignore(Select.field(Post::getCreatedAt))
+                .ignore(Select.field(Post::getUpdatedAt))
+                .ignore(Select.field(Post::getUser))
+                .ignore(Select.field(Post::getTags))
+                .supply(Select.field(Post::getTitle), () -> faker.lorem().sentence(3))
+                .supply(Select.field(Post::getContent), () -> faker.lorem().paragraph(2))
+                .create();
+
+        post.setUser(testUser);  // ← Устанавливаем User!
+        return postRepository.save(post);
     }
 
     @Test
@@ -72,12 +102,9 @@ public class PostControllerTest {
 
     @Test
     public void testShow() throws Exception {
-        Post post = Instancio.of(Post.class)
-                .ignore(Select.field(Post::getId))
-                .ignore(Select.field(Post::getCreatedAt))
-                .supply(Select.field(Post::getTitle), () -> faker.lorem().sentence(5))
-                .supply(Select.field(Post::getContent), () -> faker.lorem().paragraph(3))
-                .create();
+        Post post = createTestPost();
+
+        post.setUser(testUser);
         postRepository.save(post);
 
         MvcResult result = mockMvc.perform(get("/api/posts/" + post.getId()))
@@ -88,7 +115,8 @@ public class PostControllerTest {
         assertThatJson(body).and(
                 v -> v.node("title").isEqualTo(post.getTitle()),
                 v -> v.node("content").isEqualTo(post.getContent()),
-                v -> v.node("published").isEqualTo(post.isPublished())
+                v -> v.node("published").isEqualTo(post.isPublished()),
+                v -> v.node("userId").isEqualTo(testUser.getId())
         );
     }
 
@@ -104,6 +132,7 @@ public class PostControllerTest {
         data.put("title", "Test Post");
         data.put("content", "This is a test post content");
         data.put("published", true);
+        data.put("userId", testUser.getId());
 
         MockHttpServletRequestBuilder request = post("/api/posts")
                 .contentType(MediaType.APPLICATION_JSON)
@@ -116,6 +145,7 @@ public class PostControllerTest {
         assertThat(post.getTitle()).isEqualTo("Test Post");
         assertThat(post.getContent()).isEqualTo("This is a test post content");
         assertThat(post.isPublished()).isTrue();
+        assertThat(post.getUser().getId()).isEqualTo(testUser.getId());
     }
 
     @Test
@@ -134,12 +164,8 @@ public class PostControllerTest {
 
     @Test
     public void testUpdate() throws Exception {
-        Post post = Instancio.of(Post.class)
-                .ignore(Select.field(Post::getId))
-                .ignore(Select.field(Post::getCreatedAt))
-                .supply(Select.field(Post::getTitle), () -> faker.lorem().sentence(5))
-                .supply(Select.field(Post::getContent), () -> faker.lorem().paragraph(3))
-                .create();
+        Post post = createTestPost();
+        post.setUser(testUser);
         postRepository.save(post);
 
         HashMap<String, Object> data = new HashMap<>();
@@ -163,7 +189,7 @@ public class PostControllerTest {
     public void testUpdateNotFound() throws Exception {
         HashMap<String, Object> data = new HashMap<>();
         data.put("title", "Updated Title");
-        data.put("content", "Content");
+        data.put("content", "Content longer then 10 symbols");
         data.put("published", true);
 
         MockHttpServletRequestBuilder request = put("/api/posts/999")
@@ -176,12 +202,9 @@ public class PostControllerTest {
 
     @Test
     public void testDestroy() throws Exception {
-        var post = Instancio.of(Post.class)
-                .ignore(Select.field(Post::getId))
-                .ignore(Select.field(Post::getCreatedAt))
-                .supply(Select.field(Post::getTitle), () -> faker.lorem().sentence(5))
-                .supply(Select.field(Post::getContent), () -> faker.lorem().paragraph(3))
-                .create();
+        Post post = createTestPost();
+
+        post.setUser(testUser);
         postRepository.save(post);
 
         mockMvc.perform(delete("/api/posts/" + post.getId()))
