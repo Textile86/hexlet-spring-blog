@@ -1,6 +1,10 @@
 package io.hexlet.spring.service;
 
-import io.hexlet.spring.dto.*;
+import io.hexlet.spring.dto.PostCreateDTO;
+import io.hexlet.spring.dto.PostDTO;
+import io.hexlet.spring.dto.PostParamsDTO;
+import io.hexlet.spring.dto.PostUpdateDTO;
+import io.hexlet.spring.dto.PostPatchDTO;
 import io.hexlet.spring.exception.ResourceNotFoundException;
 import io.hexlet.spring.mapper.PostMapper;
 import io.hexlet.spring.model.Post;
@@ -37,7 +41,7 @@ public class PostService {
     @Autowired
     private TagRepository tagRepository;
 
-    public Page<PostDTO> index(PostParamsDTO params, int page, int size ) {
+    public Page<PostDTO> index(PostParamsDTO params, int page, int size) {
         Specification<Post> spec = postSpecification.build(params);
 
         Sort sort = Sort.by(Sort.Order.desc("createdAt"));
@@ -70,7 +74,7 @@ public class PostService {
         return postMapper.toDTO(findedPost);
     }
 
-    public PostDTO update(Long id,PostUpdateDTO dto) {
+    public PostDTO update(Long id, PostUpdateDTO dto) {
         Post post = postRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Post with id " + id + " not found"));
 

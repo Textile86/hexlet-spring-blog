@@ -5,7 +5,13 @@ import io.hexlet.spring.dto.PostDTO;
 import io.hexlet.spring.dto.PostPatchDTO;
 import io.hexlet.spring.dto.PostUpdateDTO;
 import io.hexlet.spring.model.Post;
-import org.mapstruct.*;
+import org.mapstruct.Mapper;
+import org.mapstruct.MappingConstants;
+import org.mapstruct.NullValuePropertyMappingStrategy;
+import org.mapstruct.ReportingPolicy;
+import org.mapstruct.Mapping;
+import org.mapstruct.MappingTarget;
+
 
 @Mapper(
         uses = { JsonNullableMapper.class, ReferenceMapper.class, TagMapper.class },

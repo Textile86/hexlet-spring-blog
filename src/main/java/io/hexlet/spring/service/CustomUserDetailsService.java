@@ -1,6 +1,5 @@
 package io.hexlet.spring.service;
 
-import io.hexlet.spring.model.User;
 import io.hexlet.spring.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.UserDetails;

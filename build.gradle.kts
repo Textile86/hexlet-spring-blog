@@ -4,6 +4,7 @@ plugins {
     id("io.spring.dependency-management") version "1.1.3"
     jacoco
     id("org.sonarqube") version "7.1.0.6387"
+    checkstyle
 }
 
 group = "io.hexlet"
@@ -52,4 +53,8 @@ sonar{
         property("sonar.projectKey", "Textile86_hexlet-spring-blog")
         property("sonar.organization", "textile86")
     }
+}
+
+checkstyle {
+    toolVersion = "10.12.4"
 }

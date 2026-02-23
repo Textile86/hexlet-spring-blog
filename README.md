@@ -3,6 +3,7 @@
 [![CI](https://github.com/your-username/hexlet-spring-blog/actions/workflows/ci.yml/badge.svg)](https://github.com/your-username/hexlet-spring-blog/actions/workflows/ci.yml)
 [![codecov](https://codecov.io/gh/your-username/hexlet-spring-blog/branch/main/graph/badge.svg)](https://codecov.io/gh/your-username/hexlet-spring-blog)
 [![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=your-username_hexlet-spring-blog&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=your-username_hexlet-spring-blog)
+![Checkstyle](https://github.com/Textile86/hexlet-spring-blog/actions/workflows/checkstyle.yml/badge.svg)
 
 ## Описание
 

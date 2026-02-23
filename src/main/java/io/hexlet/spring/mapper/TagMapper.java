@@ -4,7 +4,11 @@ import io.hexlet.spring.dto.TagCreateDTO;
 import io.hexlet.spring.dto.TagDTO;
 import io.hexlet.spring.dto.TagUpdateDTO;
 import io.hexlet.spring.model.Tag;
-import org.mapstruct.*;
+import org.mapstruct.Mapper;
+import org.mapstruct.MappingConstants;
+import org.mapstruct.NullValuePropertyMappingStrategy;
+import org.mapstruct.ReportingPolicy;
+import org.mapstruct.MappingTarget;
 
 @Mapper(
         uses = { JsonNullableMapper.class },

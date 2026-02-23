@@ -1,12 +1,27 @@
 package io.hexlet.spring.controller;
 
-import io.hexlet.spring.dto.*;
+
+import io.hexlet.spring.dto.PostCreateDTO;
+import io.hexlet.spring.dto.PostDTO;
+import io.hexlet.spring.dto.PostParamsDTO;
+import io.hexlet.spring.dto.PostUpdateDTO;
+import io.hexlet.spring.dto.PostPatchDTO;
 import io.hexlet.spring.service.PostService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.ResponseStatus;
 
 @RestController
 @RequestMapping("/api/posts")
@@ -41,7 +56,7 @@ public class PostController {
 
     @PatchMapping("/{id}")
     public PostDTO patch(@PathVariable Long id, @Valid @RequestBody PostPatchDTO dto) {
-        return postService.patch(id,dto);
+        return postService.patch(id, dto);
     }
 
     @DeleteMapping("/{id}")

@@ -5,7 +5,11 @@ import io.hexlet.spring.dto.UserDTO;
 import io.hexlet.spring.dto.UserPatchDTO;
 import io.hexlet.spring.dto.UserUpdateDTO;
 import io.hexlet.spring.model.User;
-import org.mapstruct.*;
+import org.mapstruct.Mapper;
+import org.mapstruct.MappingConstants;
+import org.mapstruct.NullValuePropertyMappingStrategy;
+import org.mapstruct.ReportingPolicy;
+import org.mapstruct.MappingTarget;
 
 @Mapper(
         uses = { JsonNullableMapper.class },
