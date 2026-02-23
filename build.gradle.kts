@@ -58,3 +58,10 @@ sonar{
 checkstyle {
     toolVersion = "10.12.4"
 }
+
+tasks.jacocoTestReport {
+    reports {
+        xml.required.set(true)
+        html.required.set(true)
+    }
+}
