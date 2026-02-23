@@ -40,6 +40,8 @@ public class SecurityConfig {
             throws Exception {
         return http
                 .cors(cors -> cors.configurationSource(corsConfigurationSource))
+                // CSRF отключен для stateless REST API с JWT
+                // SonarQube: squid:S4502 - это безопасно для JWT authentication
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
 
