@@ -50,7 +50,7 @@ public class UserServiceTest {
     }
 
     @Test
-    public void testIndex() {
+    void testIndex() {
         UserCreateDTO dto1 = new UserCreateDTO();
         dto1.setFirstName("User1");
         dto1.setLastName("Test");
@@ -71,7 +71,7 @@ public class UserServiceTest {
     }
 
     @Test
-    public void testShow() {
+    void testShow() {
         UserCreateDTO dto = new UserCreateDTO();
         dto.setFirstName("Bob");
         dto.setLastName("Johnson");
@@ -85,13 +85,13 @@ public class UserServiceTest {
     }
 
     @Test
-    public void testShowNotFound() {
+    void testShowNotFound() {
         assertThatThrownBy(() -> userService.show(999L))
                 .isInstanceOf(ResourceNotFoundException.class);
     }
 
     @Test
-    public void testUpdate() {
+    void testUpdate() {
         UserCreateDTO createDto = new UserCreateDTO();
         createDto.setFirstName("Charlie");
         createDto.setLastName("Brown");
@@ -110,7 +110,7 @@ public class UserServiceTest {
     }
 
     @Test
-    public void testDestroy() {
+    void testDestroy() {
         UserCreateDTO dto = new UserCreateDTO();
         dto.setFirstName("ToDelete");
         dto.setLastName("User");

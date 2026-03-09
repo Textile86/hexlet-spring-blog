@@ -14,32 +14,28 @@ import io.hexlet.spring.repository.PostRepository;
 import io.hexlet.spring.repository.TagRepository;
 import io.hexlet.spring.repository.UserRepository;
 import io.hexlet.spring.specification.PostSpecification;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
-import org.springframework.web.bind.annotation.PathVariable;
 import java.util.List;
 
+@RequiredArgsConstructor
 @Service
 public class PostService {
-    @Autowired
-    private PostSpecification postSpecification;
 
-    @Autowired
-    private PostRepository postRepository;
+    private final PostSpecification postSpecification;
+    private final PostRepository postRepository;
+    private final PostMapper postMapper;
+    private final UserRepository userRepository;
+    private final TagRepository tagRepository;
 
-    @Autowired
-    private PostMapper postMapper;
-
-    @Autowired
-    private UserRepository userRepository;
-
-    @Autowired
-    private TagRepository tagRepository;
+    private static final String ACTION_USER = "User with id ";
+    private static final String ACTION_POST = "Post with id ";
+    private static final String ACTION_NOT_FOUND = " not found";
 
     public Page<PostDTO> index(PostParamsDTO params, int page, int size) {
         Specification<Post> spec = postSpecification.build(params);
@@ -54,7 +50,7 @@ public class PostService {
 
     public PostDTO create(PostCreateDTO dto) {
         User user = userRepository.findById(dto.getUserId())
-                .orElseThrow(() -> new ResourceNotFoundException("User with id " + dto.getUserId() + " not found"));
+                .orElseThrow(() -> new ResourceNotFoundException(ACTION_USER + dto.getUserId() + ACTION_NOT_FOUND));
 
         Post post = postMapper.toEntity(dto);
         post.setUser(user);
@@ -70,13 +66,13 @@ public class PostService {
 
     public PostDTO show(Long id) {
         Post findedPost = postRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Post with id " + id + " not found"));
+                .orElseThrow(() -> new ResourceNotFoundException(ACTION_POST + id + ACTION_NOT_FOUND));
         return postMapper.toDTO(findedPost);
     }
 
     public PostDTO update(Long id, PostUpdateDTO dto) {
         Post post = postRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Post with id " + id + " not found"));
+                .orElseThrow(() -> new ResourceNotFoundException(ACTION_POST + id + ACTION_NOT_FOUND));
 
         postMapper.updateEntity(dto, post);
 
@@ -86,16 +82,16 @@ public class PostService {
 
     public PostDTO patch(Long id, PostPatchDTO dto) {
         Post post = postRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Post with id " + id + " not found"));
+                .orElseThrow(() -> new ResourceNotFoundException(ACTION_POST + id + ACTION_NOT_FOUND));
 
         postMapper.updateEntityFromPatch(dto, post);
         Post savedPost = postRepository.save(post);
         return postMapper.toDTO(savedPost);
     }
 
-    public void destroy(@PathVariable Long id) {
+    public void destroy(Long id) {
         Post post = postRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Post with id " + id + " not found"));
+                .orElseThrow(() -> new ResourceNotFoundException(ACTION_POST + id + ACTION_NOT_FOUND));
         postRepository.delete(post);
     }
 }

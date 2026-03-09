@@ -73,7 +73,7 @@ public class PostServiceTest {
     }
 
     @Test
-    public void testCreatePost() {
+    void testCreatePost() {
         PostCreateDTO dto = new PostCreateDTO();
         dto.setTitle("Test Post");
         dto.setContent("This is a test post");
@@ -90,7 +90,7 @@ public class PostServiceTest {
     }
 
     @Test
-    public void testCreatePostWithoutTags() {
+    void testCreatePostWithoutTags() {
         PostCreateDTO dto = new PostCreateDTO();
         dto.setTitle("Post without tags");
         dto.setContent("Content");
@@ -103,7 +103,7 @@ public class PostServiceTest {
     }
 
     @Test
-    public void testIndexWithPagination() {
+    void testIndexWithPagination() {
         // Создаем несколько постов
         for (int i = 0; i < 5; i++) {
             PostCreateDTO dto = new PostCreateDTO();
@@ -122,7 +122,7 @@ public class PostServiceTest {
     }
 
     @Test
-    public void testIndexWithFilters() {
+    void testIndexWithFilters() {
         PostCreateDTO dto1 = new PostCreateDTO();
         dto1.setTitle("Java Tutorial");
         dto1.setContent("Learn Java");
@@ -148,7 +148,7 @@ public class PostServiceTest {
     }
 
     @Test
-    public void testShow() {
+    void testShow() {
         PostCreateDTO dto = new PostCreateDTO();
         dto.setTitle("Show Test");
         dto.setContent("Content");
@@ -161,13 +161,13 @@ public class PostServiceTest {
     }
 
     @Test
-    public void testShowNotFound() {
+    void testShowNotFound() {
         assertThatThrownBy(() -> postService.show(999L))
                 .isInstanceOf(ResourceNotFoundException.class);
     }
 
     @Test
-    public void testUpdate() {
+    void testUpdate() {
         PostCreateDTO createDto = new PostCreateDTO();
         createDto.setTitle("Original Title");
         createDto.setContent("Original Content");
@@ -187,7 +187,7 @@ public class PostServiceTest {
     }
 
     @Test
-    public void testDestroy() {
+    void testDestroy() {
         PostCreateDTO dto = new PostCreateDTO();
         dto.setTitle("To Delete");
         dto.setContent("Content");

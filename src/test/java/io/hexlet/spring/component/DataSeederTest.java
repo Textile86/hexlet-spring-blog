@@ -26,9 +26,9 @@ public class DataSeederTest {
     private TagRepository tagRepository;
 
     @Test
-    public void testDataSeederDoesNotRunInTestProfile() {
-        assertThat(userRepository.count()).isEqualTo(0);
-        assertThat(postRepository.count()).isEqualTo(0);
-        assertThat(tagRepository.count()).isEqualTo(0);
+    void testDataSeederDoesNotRunInTestProfile() {
+        assertThat(userRepository.count()).isZero();
+        assertThat(postRepository.count()).isZero();
+        assertThat(tagRepository.count()).isZero();
     }
 }

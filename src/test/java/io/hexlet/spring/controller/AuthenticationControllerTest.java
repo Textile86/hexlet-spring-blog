@@ -52,7 +52,7 @@ public class AuthenticationControllerTest {
     }
 
     @Test
-    public void testLoginSuccess() throws Exception {
+    void testLoginSuccess() throws Exception {
         var data = new HashMap<>();
         data.put("username", "test@example.com");
         data.put("password", "password123");
@@ -65,7 +65,7 @@ public class AuthenticationControllerTest {
     }
 
     @Test
-    public void testLoginWrongPassword() throws Exception {
+    void testLoginWrongPassword() throws Exception {
         var data = new HashMap<>();
         data.put("username", "test@example.com");
         data.put("password", "wrongpassword");
@@ -77,7 +77,7 @@ public class AuthenticationControllerTest {
     }
 
     @Test
-    public void testLoginNonExistentUser() throws Exception {
+    void testLoginNonExistentUser() throws Exception {
         var data = new HashMap<>();
         data.put("username", "nonexistent@example.com");
         data.put("password", "password123");

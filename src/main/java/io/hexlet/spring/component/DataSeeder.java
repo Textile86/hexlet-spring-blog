@@ -7,7 +7,9 @@ import io.hexlet.spring.repository.PostRepository;
 import io.hexlet.spring.repository.TagRepository;
 import io.hexlet.spring.repository.UserRepository;
 import jakarta.annotation.PostConstruct;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Profile;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
@@ -16,30 +18,28 @@ import java.util.Arrays;
 import java.util.List;
 
 @Component
+@RequiredArgsConstructor
+@Slf4j
 @Profile({"development", "production"})
 public class DataSeeder {
 
-    @Autowired
-    private UserRepository userRepository;
+    private final UserRepository userRepository;
+    private final PostRepository postRepository;
+    private final TagRepository tagRepository;
+    private final PasswordEncoder passwordEncoder;
 
-    @Autowired
-    private PostRepository postRepository;
-
-    @Autowired
-    private TagRepository tagRepository;
-
-    @Autowired
-    private PasswordEncoder passwordEncoder;
+    @Value("${app.admin.password:admin123}")
+    private String adminPassword;
 
     @PostConstruct
     public void seedData() {
         // Проверяем, есть ли уже данные
         if (userRepository.count() > 0) {
-            System.out.println("База данных уже содержит данные. Пропускаем seed.");
+            log.info("База данных уже содержит данные. Пропускаем seed.");
             return;
         }
 
-        System.out.println("Заполняем базу данных начальными данными...");
+        log.info("Заполняем базу данных начальными данными...");
 
         // 1. Создаем пользователя-администратора
         User admin = userRepository.findByEmail("admin@example.com")
@@ -48,7 +48,7 @@ public class DataSeeder {
                     newAdmin.setFirstName("Admin");
                     newAdmin.setLastName("User");
                     newAdmin.setEmail("admin@example.com");
-                    newAdmin.setPasswordDigest(passwordEncoder.encode("admin123"));
+                    newAdmin.setPasswordDigest(passwordEncoder.encode(adminPassword));
                     return userRepository.save(newAdmin);
                 });
 
@@ -126,10 +126,10 @@ public class DataSeeder {
                         + "Применяйте пагинацию для больших списков данных.",
                 Arrays.asList(tagSpringBoot, tagREST, tagJPA));
 
-        System.out.println("База данных успешно заполнена!");
-        System.out.println("Создано пользователей: " + userRepository.count());
-        System.out.println("Создано тегов: " + tagRepository.count());
-        System.out.println("Создано постов: " + postRepository.count());
+        log.info("База данных успешно заполнена!");
+        log.info("Создано пользователей: {}", userRepository.count());
+        log.info("Создано тегов: {}", tagRepository.count());
+        log.info("Создано постов: {}", postRepository.count());
     }
 
     private Tag createTag(String name) {

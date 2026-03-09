@@ -8,7 +8,7 @@ import io.hexlet.spring.dto.PostUpdateDTO;
 import io.hexlet.spring.dto.PostPatchDTO;
 import io.hexlet.spring.service.PostService;
 import jakarta.validation.Valid;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -25,10 +25,10 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 
 @RestController
 @RequestMapping("/api/posts")
+@RequiredArgsConstructor
 public class PostController {
 
-    @Autowired
-    private PostService postService;
+    private final PostService postService;
 
     @GetMapping
     public Page<PostDTO> index(PostParamsDTO params,

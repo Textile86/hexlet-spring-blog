@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import io.hexlet.spring.model.BaseEntity;
 import jakarta.persistence.EntityManager;
 
+@SuppressWarnings("java:S6813")
 @Mapper(
         componentModel = MappingConstants.ComponentModel.SPRING
 )

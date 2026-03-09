@@ -72,7 +72,7 @@ public class PostControllerTest {
     }
 
     @Test
-    public void testIndex() throws Exception {
+    void testIndex() throws Exception {
         MvcResult result = mockMvc.perform(get("/api/posts"))
                 .andExpect(status().isOk())
                 .andReturn();
@@ -83,7 +83,7 @@ public class PostControllerTest {
     }
 
     @Test
-    public void testShow() throws Exception {
+    void testShow() throws Exception {
         Post post = createTestPost();
 
         MvcResult result = mockMvc.perform(get("/api/posts/" + post.getId()))
@@ -99,7 +99,7 @@ public class PostControllerTest {
     }
 
     @Test
-    public void testCreate() throws Exception {
+    void testCreate() throws Exception {
         var data = new HashMap<>();
         data.put("title", "Test Post");
         data.put("content", "This is a test post content");
@@ -121,7 +121,7 @@ public class PostControllerTest {
     }
 
     @Test
-    public void testCreateUnauthorized() throws Exception {
+    void testCreateUnauthorized() throws Exception {
         var data = new HashMap<>();
         data.put("title", "Test Post");
         data.put("content", "Content");
@@ -136,7 +136,7 @@ public class PostControllerTest {
     }
 
     @Test
-    public void testUpdate() throws Exception {
+    void testUpdate() throws Exception {
         Post post = createTestPost();
 
         var data = new HashMap<>();
@@ -158,7 +158,7 @@ public class PostControllerTest {
     }
 
     @Test
-    public void testDestroy() throws Exception {
+    void testDestroy() throws Exception {
         Post post = createTestPost();
 
         mockMvc.perform(delete("/api/posts/" + post.getId())

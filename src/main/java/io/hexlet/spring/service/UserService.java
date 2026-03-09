@@ -8,21 +8,21 @@ import io.hexlet.spring.exception.ResourceNotFoundException;
 import io.hexlet.spring.mapper.UserMapper;
 import io.hexlet.spring.model.User;
 import io.hexlet.spring.repository.UserRepository;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import java.util.List;
 
 @Service
+@RequiredArgsConstructor
 public class UserService {
-    @Autowired
-    private UserRepository userRepository;
 
-    @Autowired
-    private UserMapper userMapper;
+    private final UserRepository userRepository;
+    private final UserMapper userMapper;
+    private final PasswordEncoder passwordEncoder;
 
-    @Autowired
-    private PasswordEncoder passwordEncoder;
+    private static final String ACTION_USER = "User with id ";
+    private static final String ACTION_NOT_FOUND = " not found";
 
     public List<UserDTO> index() {
         List<User> users = userRepository.findAll();
@@ -43,13 +43,13 @@ public class UserService {
 
     public UserDTO show(Long id) {
         User findedUser = userRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("User with id " + id + " not found"));
+                .orElseThrow(() -> new ResourceNotFoundException(ACTION_USER + id + ACTION_NOT_FOUND));
         return userMapper.toDTO(findedUser);
     }
 
     public UserDTO update(Long id, UserUpdateDTO dto) {
         User findedUser = userRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("User with id " + id + " not found"));
+                .orElseThrow(() -> new ResourceNotFoundException(ACTION_USER + id + ACTION_NOT_FOUND));
         userMapper.updateEntity(dto, findedUser);
         User savedUser = userRepository.save(findedUser);
         return userMapper.toDTO(savedUser);
@@ -57,7 +57,7 @@ public class UserService {
 
     public UserDTO patch(Long id, UserPatchDTO dto) {
         User user = userRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("User with id " + id + " not found"));
+                .orElseThrow(() -> new ResourceNotFoundException(ACTION_USER + id + ACTION_NOT_FOUND));
 
         userMapper.updateEntityFromPatch(dto, user);
         User savedUser = userRepository.save(user);
@@ -66,7 +66,7 @@ public class UserService {
 
     public void destroy(Long id) {
         User user = userRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("User with id " + id + " not found"));
+                .orElseThrow(() -> new ResourceNotFoundException(ACTION_USER + id + ACTION_NOT_FOUND));
         userRepository.delete(user);
     }
 }

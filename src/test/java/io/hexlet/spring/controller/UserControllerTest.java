@@ -50,16 +50,16 @@ public class UserControllerTest {
     private SecurityMockMvcRequestPostProcessors.JwtRequestPostProcessor token;
 
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         userRepository.deleteAll();
 
         token = jwt().jwt(jwt -> jwt.subject("test@example.com"));
     }
 
     @Test
-    public void testIndex() throws Exception {
+    void testIndex() throws Exception {
         MvcResult result = mockMvc.perform(get("/api/users")
-                        .with(token))  // 🆕 Требует токен
+                        .with(token))
                 .andExpect(status().isOk())
                 .andReturn();
 
@@ -68,13 +68,13 @@ public class UserControllerTest {
     }
 
     @Test
-    public void testIndexUnauthorized() throws Exception {
+    void testIndexUnauthorized() throws Exception {
         mockMvc.perform(get("/api/users"))
                 .andExpect(status().isUnauthorized());
     }
 
     @Test
-    public void testShow() throws Exception {
+    void testShow() throws Exception {
         User user = createTestUser();
 
         MvcResult result = mockMvc.perform(get("/api/users/" + user.getId())
@@ -90,7 +90,7 @@ public class UserControllerTest {
     }
 
     @Test
-    public void testCreate() throws Exception {
+    void testCreate() throws Exception {
         var data = new HashMap<>();
         data.put("firstName", "John");
         data.put("lastName", "Smith");
@@ -110,7 +110,7 @@ public class UserControllerTest {
     }
 
     @Test
-    public void testDestroy() throws Exception {
+    void testDestroy() throws Exception {
         User user = createTestUser();
 
         mockMvc.perform(delete("/api/users/" + user.getId())

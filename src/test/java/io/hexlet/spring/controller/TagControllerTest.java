@@ -57,7 +57,7 @@ public class TagControllerTest {
     }
 
     @Test
-    public void testIndex() throws Exception {
+    void testIndex() throws Exception {
         MvcResult result = mockMvc.perform(get("/api/tags"))
                 .andExpect(status().isOk())
                 .andReturn();
@@ -67,7 +67,7 @@ public class TagControllerTest {
     }
 
     @Test
-    public void testShow() throws Exception {
+    void testShow() throws Exception {
         Tag tag = createTestTag();
 
         MvcResult result = mockMvc.perform(get("/api/tags/" + tag.getId()))
@@ -81,7 +81,7 @@ public class TagControllerTest {
     }
 
     @Test
-    public void testCreate() throws Exception {
+    void testCreate() throws Exception {
         var data = new HashMap<>();
         data.put("name", "Programming");
 
@@ -98,7 +98,7 @@ public class TagControllerTest {
     }
 
     @Test
-    public void testDestroy() throws Exception {
+    void testDestroy() throws Exception {
         Tag tag = createTestTag();
 
         mockMvc.perform(delete("/api/tags/" + tag.getId())
