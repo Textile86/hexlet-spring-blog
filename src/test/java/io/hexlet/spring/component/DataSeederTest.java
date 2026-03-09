@@ -14,7 +14,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 @SpringBootTest
 @ActiveProfiles("test")
 @Transactional
-public class DataSeederTest {
+class DataSeederTest {
 
     @Autowired
     private UserRepository userRepository;

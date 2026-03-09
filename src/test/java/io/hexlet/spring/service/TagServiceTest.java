@@ -17,7 +17,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 @SpringBootTest
 @ActiveProfiles("test")
 @Transactional
-public class TagServiceTest {
+class TagServiceTest {
 
     @Autowired
     private TagService tagService;
@@ -26,12 +26,12 @@ public class TagServiceTest {
     private TagRepository tagRepository;
 
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         tagRepository.deleteAll();
     }
 
     @Test
-    public void testCreateTag() {
+    void testCreateTag() {
         TagCreateDTO dto = new TagCreateDTO();
         dto.setName("Java");
 
@@ -43,7 +43,7 @@ public class TagServiceTest {
     }
 
     @Test
-    public void testGetAllTags() {
+    void testGetAllTags() {
         TagCreateDTO dto1 = new TagCreateDTO();
         dto1.setName("Java");
         tagService.create(dto1);
@@ -59,7 +59,7 @@ public class TagServiceTest {
     }
 
     @Test
-    public void testShowTag() {
+    void testShowTag() {
         TagCreateDTO dto = new TagCreateDTO();
         dto.setName("Docker");
         TagDTO created = tagService.create(dto);
@@ -71,7 +71,7 @@ public class TagServiceTest {
     }
 
     @Test
-    public void testDeleteTag() {
+    void testDeleteTag() {
         TagCreateDTO dto = new TagCreateDTO();
         dto.setName("Testing");
         TagDTO created = tagService.create(dto);

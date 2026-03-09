@@ -18,7 +18,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 @SpringBootTest
 @ActiveProfiles("test")
 @Transactional
-public class CustomUserDetailsServiceTest {
+class CustomUserDetailsServiceTest {
 
     @Autowired
     private CustomUserDetailsService userDetailsService;
@@ -30,12 +30,12 @@ public class CustomUserDetailsServiceTest {
     private PasswordEncoder passwordEncoder;
 
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         userRepository.deleteAll();
     }
 
     @Test
-    public void testLoadUserByUsername() {
+    void testLoadUserByUsername() {
         User user = new User();
         user.setFirstName("Test");
         user.setLastName("User");
@@ -50,7 +50,7 @@ public class CustomUserDetailsServiceTest {
     }
 
     @Test
-    public void testLoadUserByUsernameNotFound() {
+    void testLoadUserByUsernameNotFound() {
         assertThatThrownBy(() -> userDetailsService.loadUserByUsername("nonexistent@example.com"))
                 .isInstanceOf(UsernameNotFoundException.class);
     }

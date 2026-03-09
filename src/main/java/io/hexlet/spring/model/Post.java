@@ -30,6 +30,7 @@ import static jakarta.persistence.GenerationType.IDENTITY;
 @Setter
 @Getter
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
+
 public class Post implements BaseEntity {
 
     @Id

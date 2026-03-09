@@ -24,7 +24,7 @@ public class TagService {
     public List<TagDTO> index() {
         List<Tag> tags = tagRepository.findAll();
         return tags.stream()
-                .map(t -> tagMapper.toDTO(t))
+                .map(tagMapper::toDTO)
                 .toList();
     }
 

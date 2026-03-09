@@ -9,13 +9,13 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 @SpringBootTest
 @ActiveProfiles("test")
-public class JWTUtilsTest {
+class JWTUtilsTest {
 
     @Autowired
     private JWTUtils jwtUtils;
 
     @Test
-    public void testGenerateToken() {
+    void testGenerateToken() {
         String token = jwtUtils.generateToken("test@example.com");
 
         assertThat(token).isNotNull();
@@ -24,7 +24,7 @@ public class JWTUtilsTest {
     }
 
     @Test
-    public void testGenerateTokenForDifferentUsers() {
+    void testGenerateTokenForDifferentUsers() {
         String token1 = jwtUtils.generateToken("user1@example.com");
         String token2 = jwtUtils.generateToken("user2@example.com");
 

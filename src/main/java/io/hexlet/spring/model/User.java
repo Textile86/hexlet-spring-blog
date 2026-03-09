@@ -1,5 +1,6 @@
 package io.hexlet.spring.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Table;
 import jakarta.persistence.EntityListeners;
@@ -49,6 +50,7 @@ public class User implements BaseEntity, UserDetails {
     private String passwordDigest;
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    @JsonIgnore
     private List<Post> posts = new ArrayList<>();
 
     @CreatedDate
